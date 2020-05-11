@@ -1714,29 +1714,29 @@ func TestGetChannelMember(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 	Client := th.Client
+	th.TestForAllClients(t, func(t *testing.T, client *model.Client4) {
+		member, resp := client.GetChannelMember(th.BasicChannel.Id, th.BasicUser.Id, "")
+		CheckNoError(t, resp)
+		require.Equal(t, th.BasicChannel.Id, member.ChannelId, "wrong channel id")
+		require.Equal(t, th.BasicUser.Id, member.UserId, "wrong user id")
 
-	member, resp := Client.GetChannelMember(th.BasicChannel.Id, th.BasicUser.Id, "")
-	CheckNoError(t, resp)
-	require.Equal(t, th.BasicChannel.Id, member.ChannelId, "wrong channel id")
-	require.Equal(t, th.BasicUser.Id, member.UserId, "wrong user id")
+		_, resp = client.GetChannelMember("", th.BasicUser.Id, "")
+		CheckNotFoundStatus(t, resp)
 
-	_, resp = Client.GetChannelMember("", th.BasicUser.Id, "")
-	CheckNotFoundStatus(t, resp)
+		_, resp = client.GetChannelMember("junk", th.BasicUser.Id, "")
+		CheckBadRequestStatus(t, resp)
+		_, resp = Client.GetChannelMember(th.BasicChannel.Id, "", "")
+		CheckNotFoundStatus(t, resp)
 
-	_, resp = Client.GetChannelMember("junk", th.BasicUser.Id, "")
-	CheckBadRequestStatus(t, resp)
+		_, resp = Client.GetChannelMember(th.BasicChannel.Id, "junk", "")
+		CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.GetChannelMember(model.NewId(), th.BasicUser.Id, "")
+		_, resp = Client.GetChannelMember(th.BasicChannel.Id, model.NewId(), "")
+		CheckNotFoundStatus(t, resp)
+	})
+
+	_, resp := Client.GetChannelMember(model.NewId(), th.BasicUser.Id, "")
 	CheckForbiddenStatus(t, resp)
-
-	_, resp = Client.GetChannelMember(th.BasicChannel.Id, "", "")
-	CheckNotFoundStatus(t, resp)
-
-	_, resp = Client.GetChannelMember(th.BasicChannel.Id, "junk", "")
-	CheckBadRequestStatus(t, resp)
-
-	_, resp = Client.GetChannelMember(th.BasicChannel.Id, model.NewId(), "")
-	CheckNotFoundStatus(t, resp)
 
 	Client.Logout()
 	_, resp = Client.GetChannelMember(th.BasicChannel.Id, th.BasicUser.Id, "")

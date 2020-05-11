@@ -13,6 +13,7 @@ import (
 func (api *API) InitChannelLocal() {
 	api.BaseRoutes.Channels.Handle("", api.ApiLocal(getAllChannels)).Methods("GET")
 	api.BaseRoutes.Channels.Handle("", api.ApiLocal(localCreateChannel)).Methods("POST")
+	api.BaseRoutes.ChannelMember.Handle("", api.ApiLocal(getChannelMember)).Methods("GET")
 }
 
 func localCreateChannel(c *Context, w http.ResponseWriter, r *http.Request) {
